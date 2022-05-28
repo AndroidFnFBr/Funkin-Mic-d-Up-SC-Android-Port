@@ -13,6 +13,7 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
+import io.newgrounds.NG;
 import lime.app.Application;
 #if desktop
 import Discord.DiscordClient;
@@ -20,15 +21,13 @@ import Discord.DiscordClient;
 
 using StringTools;
 
-class MainMenuState extends MusicBeatState
+class ExtrasMenuState extends MusicBeatState
 {
 	var curSelected:Int = 0;
 
 	var menuItems:FlxTypedGroup<FlxSprite>;
 
-	var realMenuItems:Int = 4;
-
-	var optionShit:Array<String> = ['play', 'ost', 'credits', 'options', 'discord', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', '', 'dave x bambi shipping cute'];
+	var optionShit:Array<String> = ['ost', 'credits', 'merch', 'discord'];
 
 	var newGaming:FlxText;
 	var newGaming2:FlxText;
@@ -40,7 +39,7 @@ class MainMenuState extends MusicBeatState
 
 	public static var daRealEngineVer:String = 'Dave';
 
-	public static var engineVers:Array<String> = ['Golden Apple'];
+	public static var engineVers:Array<String> = ['Dave', 'Bambi', 'Tristan'];
 
 	public static var kadeEngineVer:String = "DAVE";
 	public static var gameVer:String = "0.2.7.1";
@@ -81,7 +80,7 @@ class MainMenuState extends MusicBeatState
 			FlxG.save.data.unlockedcharacters = [true,true,false,false,false,false];
 		}
 
-		daRealEngineVer = engineVers[FlxG.random.int(0, 0)];
+		daRealEngineVer = engineVers[FlxG.random.int(0, 2)];
 		
 		var bg:FlxSprite = new FlxSprite(-80).loadGraphic(randomizeBG());
 		bg.scrollFactor.set();
@@ -116,19 +115,9 @@ class MainMenuState extends MusicBeatState
 		for (i in 0...optionShit.length)
 		{
 			var menuItem:FlxSprite = new FlxSprite(0, FlxG.height * 1.6);
-			if (optionShit[i] == 'dave x bambi shipping cute')
-			{
-				menuItem.frames = Paths.getSparrowAtlas('hi');
-				menuItem.animation.addByPrefix('idle', optionShit[i] + " basic", 24);
-				menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
-			}
-			else 
-			{
-				menuItem.frames = tex;
-				menuItem.animation.addByPrefix('idle', optionShit[i] + " basic", 24);
-				menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
-			}
-			if (optionShit[i] == '') menuItem.visible = false;
+			menuItem.frames = tex;
+			menuItem.animation.addByPrefix('idle', optionShit[i] + " basic", 24);
+			menuItem.animation.addByPrefix('selected', optionShit[i] + " white", 24);
 			menuItem.animation.play('idle');
 			menuItem.ID = i;
 			menuItem.screenCenter(X);
@@ -173,17 +162,10 @@ class MainMenuState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
-		menuItems.forEach(function(spr:FlxSprite)
-		{
-			spr.screenCenter(X);
-		});
-
 		if (FlxG.sound.music.volume < 0.8)
 		{
 			FlxG.sound.music.volume += 0.5 * FlxG.elapsed;
 		}
-
-		super.update(elapsed);
 
 		if (!selectedSomethin)
 		{
@@ -201,81 +183,73 @@ class MainMenuState extends MusicBeatState
 
 			if (controls.BACK)
 			{
-				FlxG.switchState(new TitleState());
+				FlxG.switchState(new MainMenuState());
 			}
 
 			if (controls.ACCEPT)
 			{
-				if(optionShit[curSelected] == '')
+        		if (optionShit[curSelected] == 'discord' || optionShit[curSelected] == 'merch')
 				{
-					return;
+                    switch(optionShit[curSelected])
+                    {
+                        case 'discord':
+                            fancyOpenURL("https://www.discord.gg/vsdave");
+                        case 'merch':
+                            fancyOpenURL("https://my-store-c1bc70.creator-spring.com/");
+                    }
 				}
-				if(optionShit[curSelected] == 'discord')
-				{
-					fancyOpenURL('https://discord.gg/UvyuaUrX');
-					return;
-				}
-				selectedSomethin = true;
-				FlxG.sound.play(Paths.sound('confirmMenu'));
-
-				FlxFlicker.flicker(magenta, 1.1, 0.15, false);
-
-				menuItems.forEach(function(spr:FlxSprite)
-				{
-					if (curSelected != spr.ID)
-					{
-						FlxTween.tween(spr, {alpha: 0}, 1.3, {
-							ease: FlxEase.quadOut,
-							onComplete: function(twn:FlxTween)
-							{
-								spr.kill();
-							}
-						});
-					}
-					else
-					{
-						FlxFlicker.flicker(spr, 1, 0.06, false, false, function(flick:FlxFlicker)
-						{
-							var daChoice:String = optionShit[curSelected];
-							switch (daChoice)
-							{
-								case 'story mode':
-									FlxG.switchState(new StoryMenuState());
-									trace("Story Menu Selected");
-								case 'freeplay':
-									FlxG.switchState(new FreeplayState());
-									trace("Freeplay Menu Selected");
-								case 'options':
-									FlxG.switchState(new OptionsMenu());
-								case 'extras':
-									FlxG.switchState(new ExtraSongState());
-								case 'ost':
-									FlxG.switchState(new MusicPlayerState());
-								case 'credits':
-									FlxG.switchState(new CreditsMenuState());
-								case 'play':
-									FlxG.switchState(new PlayMenuState());
-								case 'dave x bambi shipping cute':
-									var poop:String = Highscore.formatSong('dave-x-bambi-shipping-cute', 1);
-
-									trace(poop);
-
-									FlxG.save.data.shipUnlocked = true;
-						
-									PlayState.SONG = Song.loadFromJson(poop, 'dave-x-bambi-shipping-cute');
-									PlayState.isStoryMode = false;
-									PlayState.storyDifficulty = 1;
-									PlayState.xtraSong = false;
-						
-									PlayState.storyWeek = 1;
-									LoadingState.loadAndSwitchState(new PlayState());
-							}
-						});
-					}
-				});
-				
+                else
+                {
+                    selectedSomethin = true;
+                    FlxG.sound.play(Paths.sound('confirmMenu'));
+    
+                    FlxFlicker.flicker(magenta, 1.1, 0.15, false);
+    
+                    menuItems.forEach(function(spr:FlxSprite)
+                    {
+                        if (curSelected != spr.ID)
+                        {
+                            FlxTween.tween(spr, {alpha: 0}, 1.3, {
+                                ease: FlxEase.quadOut,
+                                onComplete: function(twn:FlxTween)
+                                {
+                                    spr.kill();
+                                }
+                            });
+                        }
+                        else
+                        {
+                            FlxFlicker.flicker(spr, 1, 0.06, false, false, function(flick:FlxFlicker)
+                            {
+                                var daChoice:String = optionShit[curSelected];
+                                switch (daChoice)
+                                {
+                                    case 'story mode':
+                                        FlxG.switchState(new StoryMenuState());
+                                        trace("Story Menu Selected");
+                                    case 'freeplay':
+                                        FlxG.switchState(new FreeplayState());
+                                        trace("Freeplay Menu Selected");
+                                    case 'options':
+                                        FlxG.switchState(new OptionsMenu());
+                                    case 'ost':
+                                        FlxG.switchState(new MusicPlayerState());
+                                    case 'credits':
+                                        FlxG.switchState(new CreditsMenuState());
+                                }
+                            });
+                        }
+                    });
+                }				
 			}
 		}
+
+		super.update(elapsed);
+
+		menuItems.forEach(function(spr:FlxSprite)
+		{
+			spr.screenCenter(X);
+		});
 	}
 
 	override function beatHit()
@@ -293,7 +267,7 @@ class MainMenuState extends MusicBeatState
 			if (curSelected >= menuItems.length)
 				curSelected = 0;
 			if (curSelected < 0)
-				curSelected = realMenuItems - 1;	
+				curSelected = menuItems.length - 1;	
 		}
 
 		menuItems.forEach(function(spr:FlxSprite)
